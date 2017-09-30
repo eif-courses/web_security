@@ -48,13 +48,20 @@ class func
 
     public static function createRecord($dbh, $user_username, $user_id)
     {
-        $dbh->prepare('DELETE FROM sessions WHERE sessions_userid=:sessions_userid;');
+        $query = "INSERT INTO sessions(sessions_userid, sessions_token, sessions_serial, sessions_date) VALUES(:user_id, :token, :serial, 5021)";
 
-        $token = self::createString(32);
-        $serial = self::createString(32);
+        $dbh->prepare('DELETE FROM sessions WHERE sessions_userid = :sessions_userid;')->execute(array(':sessions_userid' => $user_id));
+
+        $token = func::createString(32);
+        $serial = func::createString(32);
 
         func::createCookie($user_username, $user_id, $token, $serial);
         func::createSession($user_username, $user_id, $token, $serial);
+
+        $stmt = $dbh->prepare($query);
+        
+        $stmt->execute(array(':user_id' => $user_id, ':token' => $token, ':serial' => $serial));
+
     }
     public static function createString($len){
         $tokenas = bin2hex(random_bytes($len));
@@ -64,11 +71,21 @@ class func
     private static function createCookie($user_username, $user_id, $token, $serial)
     {
         setcookie('user_id', $user_id, time() + (86400) * 30, "/");
+        setcookie('user_username', $user_username, time() + (86400) * 30, "/");
         setcookie('token', $token, time() + (86400) * 30, "/");
         setcookie('serial', $serial, time() + (86400) * 30, "/");
     }
 
     private static function createSession($user_username, $user_id, $token, $serial)
     {
+        if(!isset($_SESSION['id']) || !isset($_SESSION['PHPSESSID'])) {
+            session_start();
+        }
+        $_SESSION['user_username'] = $user_username;
+
+        setcookie('user_id', $user_id, time() + (86400) * 30, "/");
+        setcookie('token', $token, time() + (86400) * 30, "/");
+        setcookie('serial', $serial, time() + (86400) * 30, "/");
+
     }
 }
