@@ -12,11 +12,13 @@ include_once("header.php");
 <section clas="parent">
     <div class="child">
         <?php
-        if(func::checkLoginState($dbh)){
-            echo 'Welcome' . $_SESSION['username'] . '!';
+        if(!func::checkLoginState($dbh)){
+            header("location:login.php");
+            exit();
         }
         else{
-            header("location:login.php");
+            echo 'Welcome' . $_SESSION['username'] . '!';
+
         }
         ?>
     </div>

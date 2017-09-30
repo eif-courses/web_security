@@ -1,6 +1,6 @@
 <?php include_once("config.php"); include_once("func.php")?>
 
-<html><head><title>Login page</title>
+<html><head><title>Web security simple example</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
