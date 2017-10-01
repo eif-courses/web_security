@@ -29,18 +29,20 @@ class func
             $row = $stmt->fetch(PDO:: FETCH_ASSOC);
 
             if($row['sessions_userid'] > 0){
-                if($row['sessions_userid'] == $_COOKIE['user_id'] &&
-                $row['sessions_userid'] == $_COOKIE['token'] &&
-                $row['sessions_userid'] == $_COOKIE['serial']
+                if(
+                    $row['sessions_userid'] == $userid &&
+                    $row['sessions_token'] == $token &&
+                    $row['sessions_serial'] == $serial
                 ){
-                    if($row['sessions_userid'] == $_SESSION['user_id'] &&
-                        $row['sessions_userid'] == $_SESSION['token'] &&
-                        $row['sessions_userid'] == $_SESSION['serial']
+                    if(
+                        $row['sessions_userid'] == $_SESSION['userid'] &&
+                        $row['sessions_token'] == $_SESSION['token'] &&
+                        $row['sessions_serial'] == $_SESSION['serial']
                     ){
                         return true;
                     }
                     else{
-                        func::createSession($_COOKIE['username'],$_COOKIE['user_id'], $_COOKIE['token'], $_COOKIE['serial']);
+                        func::createSession($_COOKIE['user_username'],$_COOKIE['user_id'], $_COOKIE['token'], $_COOKIE['serial']);
                         return true;
                     }
 
@@ -81,10 +83,10 @@ class func
     }
     public static function deleteCookie()
     {
-        setcookie('user_id', time() - 1, "/");
-        setcookie('user_username', time() - 1, "/");
-        setcookie('token',time() - 1, "/");
-        setcookie('serial', time() - 1, "/");
+        setcookie('user_id', time() - 60, "/");
+        setcookie('user_username', time() - 60, "/");
+        setcookie('token',time() - 60, "/");
+        setcookie('serial', time() - 60, "/");
     }
 
     public static function createSession($user_username, $user_id, $token, $serial)
@@ -92,11 +94,50 @@ class func
         if(!isset($_SESSION)) {
             session_start();
         }
-        $_SESSION['user_username'] = $user_username;
+        $_SESSION['username'] = $user_username;
+        $_SESSION['userid'] = $user_id;
+        $_SESSION['token'] =  $token;
+        $_SESSION['serial'] = $serial;
+        //setcookie('user_id', $user_id, time() + (86400) * 30, "/");
+        //setcookie('token', $token, time() + (86400) * 30, "/");
+       // setcookie('serial', $serial, time() + (86400) * 30, "/");
 
-        setcookie('user_id', $user_id, time() + (86400) * 30, "/");
-        setcookie('token', $token, time() + (86400) * 30, "/");
-        setcookie('serial', $serial, time() + (86400) * 30, "/");
+    }
 
+
+    public static function createForm(){
+
+        self::getToken(); // Tikrinam tokenas ar yra sukurtas
+
+        echo '<div class="form">
+              <form class="login-form" action="welcome.php" method="post">
+              <input type="text" name="tekstas" placeholder="tekstas"/>';
+
+              echo self::getTokenField();  // pridedame hidden token laukeli
+
+        echo '<button>send info</button></form></div>';
+
+    }
+
+    // Video pagal kuri buvo daryta https://www.youtube.com/watch?v=_7E53lfPDZw&t=356
+    // Formu apsauga naudojant tokeną paspleptame laukelyje
+    // Kiekviena karta atėjus iki formos generuojamas kitas tokenas
+
+    public static function getToken(){
+        if(!isset($_COOKIE['token'])){
+            $_COOKIE['token'] = func::createString(32);
+        }
+    }
+    public static function checkToken($token){
+        if($token != $_COOKIE['token']){
+            header("location:404.php");
+            exit;
+        }
+    }
+    public static function getTokenField(){
+        return '<input type="hidden" name="token" value="'.$_COOKIE['token'].'"/>';
+    }
+    public static function destroyToken(){
+        unset($_COOKIE['token']);
     }
 }

@@ -6,7 +6,7 @@
 <body>
 <div class="center">
 
-    <img src="img/header_1.png" alt="" height="200px" width="100%">
+    <img src="img/header_1.png" alt="" height="50px" width="100%">
 
 
 </div>
